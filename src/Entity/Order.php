@@ -1,11 +1,11 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Order\Entity;
 
-use Order\Utils\ObjectAndArray;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Order\Utils\ObjectAndArray;
 
 /**
  * Order
@@ -71,21 +71,21 @@ class Order
      *
      * @ORM\Column(name="`tax`", type="float", precision=10, scale=0, nullable=false)
      */
-    private float $tax =  0.0;
+    private float $tax = 0.0;
 
     /**
      * @var float
      *
      * @ORM\Column(name="`shipping`", type="float", precision=10, scale=0, nullable=false)
      */
-    private float $shipping =  0.0;
+    private float $shipping = 0.0;
 
     /**
      * @var float
      *
      * @ORM\Column(name="`total`", type="float", precision=10, scale=0, nullable=false)
      */
-    private float $total =  0.0;
+    private float $total = 0.0;
 
     /**
      * @var string|null
