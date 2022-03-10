@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace Order\Controller;
 
+use DateTime;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 use Order\Entity\Order;
+use Order\Message\OrderEvent;
 use Order\Repository\OrderRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,15 +29,16 @@ class OrderController extends AbstractController
     }
 
     /**
-     * @Route("/orders/", name="create", methods={"POST"})
+     * @Route("/orders", name="create", methods={"POST"})
+     * @throws Exception
      */
     public function create(Request $request): JsonResponse
     {
-
         $data = json_decode($request->getContent(), true);
-        $order = (new Order())->fromArray($data);
+        $order = (new Order())->fromArray($data)->setCreatedAt(new DateTime());
 
         $this->orderRepository->save($order);
+        (new OrderEvent($order, 'create'))->dispatch();
 
         return new JsonResponse(['status' => 'Order created!'], Response::HTTP_CREATED);
     }
@@ -52,25 +56,29 @@ class OrderController extends AbstractController
 
     /**
      * @Route("/orders/{id}", name="update", methods={"PUT"})
+     * @throws Exception
      */
     public function update(int $id, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $order = (new Order())->fromArray($data)->setId($id);
+        $order = $this->orderRepository->findOneBy(['id' => $id])->fromArray($data);
 
         $this->orderRepository->save($order);
+        (new OrderEvent($order, 'update'))->dispatch();
 
         return new JsonResponse(['status' => 'Order updated!'], Response::HTTP_ACCEPTED);
     }
 
     /**
      * @Route("/orders/{id}", name="delete", methods={"DELETE"})
+     * @throws Exception
      */
     public function delete($id): JsonResponse
     {
         $order = $this->orderRepository->findOneBy(['id' => $id]);
 
         $this->orderRepository->remove($order);
+        (new OrderEvent($order, 'delete'))->dispatch();
 
         return new JsonResponse(['status' => 'Order deleted'], Response::HTTP_NO_CONTENT);
     }
